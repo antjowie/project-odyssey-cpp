@@ -5,6 +5,28 @@ set_warnings("all", "error")
 set_optimize("fastest")
 add_rules("plugin.vsxmake.autoupdate")
 
+package("entt")
+    add_deps("cmake")
+    set_sourcedir(path.join(os.scriptdir(), "thirdparty", "entt"))
+    on_install(function (package)
+        local configs = {}
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+        import("package.tools.cmake").install(package, configs)
+    end)
+package_end()
+
+package("glm")
+    add_deps("cmake")
+    set_sourcedir(path.join(os.scriptdir(), "thirdparty", "glm"))
+    on_install(function (package)
+        local configs = {}
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=ON")
+        table.insert(configs, "-DGLM_BUILD_TESTS=OFF")
+        import("package.tools.cmake").install(package, configs)
+    end)
+package_end()
+
 package("SDL")
     add_deps("cmake")
     set_sourcedir(path.join(os.scriptdir(), "thirdparty", "SDL"))
@@ -16,13 +38,14 @@ package("SDL")
     end)
 package_end()
 
-add_requires("SDL")
+add_requires("entt", "glm", "SDL")
 
 target("game")
     set_kind("binary")
     add_files("src/*.cpp")
-    add_packages("SDL")
-    set_pcxxheader("src/Stdafx.h")
+    set_languages("cxx20")
+    add_packages("entt", "glm", "SDL")
+    set_pcxxheader("src/stdafx.h")
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

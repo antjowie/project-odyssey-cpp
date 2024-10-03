@@ -1,14 +1,16 @@
 #pragma once
-#include "Stdafx.h"
+#include "stdafx.h"
 
 class Game
 {
 public:
+    // Implement SDL lifetime callbacks
     SDL_AppResult init();
-    SDL_AppResult loop();
-    SDL_AppResult event(SDL_Event *event);
+    SDL_AppResult update();
+    SDL_AppResult event(SDL_Event &event);
     void quit();
 
 private:
-    SDL_Window *window = NULL;
+    WindowHandle window;
+    RendererHandle renderer;
 };

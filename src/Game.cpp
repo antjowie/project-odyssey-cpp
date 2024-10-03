@@ -2,42 +2,56 @@
 
 constexpr unsigned screenWidth = 1920;
 constexpr unsigned screenHeight = 1080;
-constexpr char *name = "Train game";
-constexpr char *version = "0.0.1";
-constexpr char *identifier = "com.angelorettob.traingame";
+constexpr std::string_view name = "Project Oddysey";
+constexpr std::string_view version = "0.0.1";
+constexpr std::string_view identifier = "com.angelorettob.projectoddysey";
 
 SDL_AppResult Game::init()
 {
-    // Setup metadata
-    SDL_SetAppMetadata(name, version, identifier);
+    SDL_SetAppMetadata(name.data(), version.data(), identifier.data());
 
-    // Initialize SDL
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
-        SDL_Log("SDL could not initialize! SDL_Error: %s ", SDL_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL!", SDL_GetError(), nullptr);
         return SDL_APP_FAILURE;
     }
 
-    // Create window
-    window = SDL_CreateWindow("Train game", screenWidth, screenHeight, SDL_WINDOW_RESIZABLE);
-    if (window == nullptr)
+    SDL_Window *wHandle = nullptr;
+    SDL_Renderer *rHandle = nullptr;
+    SDL_CreateWindowAndRenderer(name.data(), screenWidth, screenHeight, 0, &wHandle, &rHandle);
+    if (wHandle == nullptr || rHandle == nullptr)
     {
-        SDL_Log("Window could not be created! SDL_Error: %s ", SDL_GetError());
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't initialize window/renderer!", SDL_GetError(), nullptr);
         return SDL_APP_FAILURE;
     }
+    window.reset(wHandle);
+    renderer.reset(rHandle);
+
+    // Cache internally
+    SDL_GetBasePath();
 
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult Game::loop()
+static Uint64 previousTicks = 0;
+SDL_AppResult Game::update()
 {
+    const Uint64 currentTicks = SDL_GetTicks();
+    const double currentTime = static_cast<double>(currentTicks) * 0.001;
+    const double deltaTime = static_cast<double>(currentTicks - previousTicks) * 0.001;
+    previousTicks = SDL_GetTicks();
+
+    SDL_SetRenderDrawColor(renderer.get(), 33, 33, 33, 255);
+    SDL_RenderClear(renderer.get());
+
+    SDL_RenderPresent(renderer.get());
 
     return SDL_APP_CONTINUE;
 }
 
-SDL_AppResult Game::event(SDL_Event *event)
+SDL_AppResult Game::event(SDL_Event &event)
 {
-    if (event->type == SDL_EVENT_QUIT)
+    if (event.type == SDL_EVENT_QUIT)
         return SDL_APP_SUCCESS;
 
     return SDL_APP_CONTINUE;
@@ -45,9 +59,4 @@ SDL_AppResult Game::event(SDL_Event *event)
 
 void Game::quit()
 {
-    // Destroy window
-    SDL_DestroyWindow(window);
-
-    // Quit SDL subsystems
-    SDL_Quit();
 }
