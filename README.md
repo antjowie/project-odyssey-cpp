@@ -1,3 +1,5 @@
+[![Build](https://github.com/antjowie/project-odyssey/actions/workflows/build.yml/badge.svg)](https://github.com/antjowie/project-odyssey/actions/workflows/build.yml)
+
 # Project Odyssey
 
 A train simulator game

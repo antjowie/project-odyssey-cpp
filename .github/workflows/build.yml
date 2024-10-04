@@ -1,0 +1,67 @@
+name: Build
+run-name: Build
+on: [push]
+jobs:
+  build:
+    strategy: 
+      fail-fast: false      
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        
+    runs-on: ${{matrix.os}}  
+      
+    steps:
+      - name: Setup Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install build-essential git make \
+            pkg-config cmake ninja-build gnome-desktop-testing libasound2-dev libpulse-dev \
+            libaudio-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
+            libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev \
+            libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
+        
+        # I'd like to cache the installed libraries as they take the most time (like 90% of the build time)
+        # But it doesn't really seem to work... I'll leave the cache code here the time being.
+        # See https://github.com/antjowie/project-odyssey/issues/1
+      - uses: actions/cache/restore@v4
+        id: restore-cache
+        with:
+          path: |
+            **/.git/**/*
+            **/.xmake/**/*
+            **/build/**/*
+          key: project-files-${{matrix.os}}
+      - uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+          actions-cache-folder: '.xmake-cache'
+          actions-cache-key: 'xmake-key'  
+      - run: "xmake config -Dy -m release"
+      - run: "xmake build -Dy"
+      - name: Delete Previous Cache
+        if: steps.restore-cache.outputs.cache-hit
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "${{ steps.restore-cache.outputs.cache-primary-key }}" --confirm
+      - uses: actions/cache/save@v4
+        if: always()
+        continue-on-error: true
+        with:
+          path: |
+            **/.git/**/*
+            **/.xmake/**/*
+            **/build/**/*
+          key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+      - run: "xmake install -Dy -o release"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: project-odyssey-${{matrix.os}}
+          path: release
