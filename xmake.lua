@@ -1,11 +1,15 @@
 add_rules("mode.debug", "mode.release")
 add_rules("c.unity_build", "c++.unity_build")
 add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
-set_policy("build.warning", true)
-set_warnings("allextra", "error")
-set_optimize("fastest")
 add_rules("plugin.vsxmake.autoupdate")
+set_optimize("fastest")
 set_languages("cxx20")
+set_project("project-odyssey")
+
+-- Setup libraries
+set_config("shared", true)
+set_config("examples", false)
+includes(path.join(os.scriptdir(), "thirdparty", "enet6"))
 
 package("entt")
     add_deps("cmake")
@@ -13,8 +17,23 @@ package("entt")
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
         import("package.tools.cmake").install(package, configs)
     end)
+package_end()
+
+package("fmt")
+    add_deps("cmake")
+    set_sourcedir(path.join(os.scriptdir(), "thirdparty", "fmt"))
+    on_install(function (package)
+        local configs = {}
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        import("package.tools.cmake").install(package, configs)
+        
+        os.rm(path.join(os.scriptdir(), "thirdparty", "fmt", "run-msbuild.bat"))
+    end)
+    
 package_end()
 
 package("glm")
@@ -23,7 +42,7 @@ package("glm")
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
-        table.insert(configs, "-DBUILD_SHARED_LIBS=ON")
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
         table.insert(configs, "-DGLM_BUILD_TESTS=OFF")
         import("package.tools.cmake").install(package, configs)
     end)
@@ -35,18 +54,39 @@ package("SDL")
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
-        table.insert(configs, "-DBUILD_SHARED_LIBS=ON")
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
         table.insert(configs, "-DSDL_TEST_LIBRARY=OFF")
         import("package.tools.cmake").install(package, configs)
     end)
 package_end()
 
-add_requires("entt", "glm", "SDL")
+packages = {"enet6", "entt", "fmt", "glm", "SDL"}
+add_requires(unpack(packages))
 
+target("imgui")
+    set_kind("static")
+    add_packages("SDL")
+    add_includedirs("thirdparty/imgui", {public = true})
+    add_headerfiles("thirdparty/imgui/*.h")
+    add_files("thirdparty/imgui/*.cpp")
+    
+    add_headerfiles("thirdparty/imgui/misc/cpp/imgui_stdlib.h")
+    add_files("thirdparty/imgui/misc/cpp/imgui_stdlib.cpp")
+    add_includedirs("thirdparty/imgui/backends/", {public = true})
+    add_headerfiles("thirdparty/imgui/backends/imgui_impl_sdlrenderer3.h")
+    add_files("thirdparty/imgui/backends/imgui_impl_sdlrenderer3.cpp")
+    add_headerfiles("thirdparty/imgui/backends/imgui_impl_sdl3.h")
+    add_files("thirdparty/imgui/backends/imgui_impl_sdl3.cpp")
+
+-- Setup project
 target("game")
     set_kind("binary")
+    add_headerfiles("src/*.h")
     add_files("src/*.cpp")
-    add_packages("entt", "glm", "SDL")
+    set_policy("build.warning", true)
+    set_warnings("all", "error")
+    add_packages(unpack(packages))
+    add_deps("imgui")
     set_pcxxheader("src/stdafx.h")
 
 --

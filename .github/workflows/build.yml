@@ -60,7 +60,7 @@ jobs:
             **/.xmake/**/*
             **/build/**/*
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
-      - run: "xmake install -Dy -o release"
+      - run: "xmake install -Dy -o release game"
       - uses: actions/upload-artifact@v4
         with:
           name: project-odyssey-${{matrix.os}}

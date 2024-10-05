@@ -2,6 +2,7 @@
 build/
 .vs/
 .vscode/
+release/
 
 # MacOS Cache
 .DS_Store
