@@ -9,6 +9,7 @@ set_project("project-odyssey")
 -- Setup libraries
 set_config("shared", true)
 set_config("examples", false)
+
 includes(path.join(os.scriptdir(), "thirdparty", "enet6"))
 
 package("entt")
@@ -17,7 +18,7 @@ package("entt")
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
-        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (get_config("shared") and "ON" or "OFF"))
         import("package.tools.cmake").install(package, configs)
     end)
 package_end()
@@ -28,12 +29,11 @@ package("fmt")
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
-        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (get_config("shared") and "ON" or "OFF"))
         import("package.tools.cmake").install(package, configs)
         
         os.rm(path.join(os.scriptdir(), "thirdparty", "fmt", "run-msbuild.bat"))
-    end)
-    
+    end)    
 package_end()
 
 package("glm")
@@ -42,7 +42,7 @@ package("glm")
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
-        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (get_config("shared") and "ON" or "OFF"))
         table.insert(configs, "-DGLM_BUILD_TESTS=OFF")
         import("package.tools.cmake").install(package, configs)
     end)
@@ -54,9 +54,9 @@ package("SDL")
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
-        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (get_config("shared") and "ON" or "OFF"))
         table.insert(configs, "-DSDL_TEST_LIBRARY=OFF")
-        import("package.tools.cmake").install(package, configs)
+        import("package.tools.cmake").install(package, configs)        
     end)
 package_end()
 
@@ -77,6 +77,7 @@ target("imgui")
     add_files("thirdparty/imgui/backends/imgui_impl_sdlrenderer3.cpp")
     add_headerfiles("thirdparty/imgui/backends/imgui_impl_sdl3.h")
     add_files("thirdparty/imgui/backends/imgui_impl_sdl3.cpp")
+target_end()
 
 -- Setup project
 target("game")
@@ -88,6 +89,14 @@ target("game")
     add_packages(unpack(packages))
     add_deps("imgui")
     set_pcxxheader("src/stdafx.h")
+    after_build(function (target)
+    -- Honestly, very hacky way to copy the SDL3.dll to the output directory.
+    -- This will ensure `xmake run` works, if you `xmake install` dll will be copied anyway
+        local sdl_dll = path.join(os.projectdir(), 
+        "build", ".packages", "s", "sdl", "latest", "*", "bin", "SDL3.dll")
+        print("Copying " .. sdl_dll .. " to " .. target:targetdir())
+        os.cp(sdl_dll, target:targetdir())
+    end)
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
@@ -157,4 +166,3 @@ target("game")
 --
 -- @endcode
 --
-
