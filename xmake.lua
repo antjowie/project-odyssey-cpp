@@ -86,11 +86,12 @@ target("game")
     set_kind("binary")
     add_headerfiles("src/*.h")
     add_files("src/*.cpp")
-    set_policy("build.warning", true)
-    set_warnings("all", "error")
     add_packages(unpack(packages))
     add_deps("imgui")
     set_pcxxheader("src/stdafx.h")
+    set_policy("build.warning", true)
+    set_warnings("all", "extra", "error")
+    -- All warnings on MSVC
     after_build(function (target)
     -- Honestly, very hacky way to copy the SDL3.dll to the output directory.
     -- This will ensure `xmake run` works, if you `xmake install` dll will be copied anyway

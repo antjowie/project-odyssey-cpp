@@ -85,9 +85,9 @@ SDL_AppResult Game::init()
 static Uint64 previousTicks = 0;
 SDL_AppResult Game::update()
 {
-    const Uint64 currentTicks = SDL_GetTicks();
-    const double currentTime = static_cast<double>(currentTicks) * 0.001;
-    const double deltaTime = static_cast<double>(currentTicks - previousTicks) * 0.001;
+    // const Uint64 currentTicks = SDL_GetTicks();
+    // const double currentTime = static_cast<double>(currentTicks) * 0.001;
+    // const double deltaTime = static_cast<double>(currentTicks - previousTicks) * 0.001;
     previousTicks = SDL_GetTicks();
 
     // Our state
