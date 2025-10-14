@@ -101,6 +101,8 @@ SDL_AppResult Game::update()
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 
+    ImGui::DockSpaceOverViewport();
+
     // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
     if (show_demo_window)
         ImGui::ShowDemoWindow(&show_demo_window);
