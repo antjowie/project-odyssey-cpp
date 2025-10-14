@@ -1,4 +1,4 @@
-[![Build](https://github.com/antjowie/project-odyssey/actions/workflows/build.yml/badge.svg)](https://github.com/antjowie/project-odyssey/actions/workflows/build.yml)
+[![Build](https://github.com/antjowie/project-odyssey-cpp/actions/workflows/build.yml/badge.svg)](https://github.com/antjowie/project-odyssey-cpp/actions/workflows/build.yml)
 
 # Project Odyssey
 

@@ -19,6 +19,8 @@ package("entt")
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
         table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (get_config("shared") and "ON" or "OFF"))
+        table.insert(configs, "-DENTT_INSTALL=ON")
+        
         import("package.tools.cmake").install(package, configs)
     end)
 package_end()
