@@ -24,21 +24,19 @@ MS2 - gameplay progression
 
 ## Build on Windows
 
-Take a look at [the GitHub action](https://github.com/antjowie/project-odyssey/blob/master/.github/workflows/build.yml) for the most up to date instructions. Otherwise, follow the steps below:
+Xmake is used to build this project. Check [the GitHub action](https://github.com/antjowie/project-odyssey/blob/master/.github/workflows/build.yml) for the most up to date instructions. Otherwise, follow the steps below:
 
-1. Pull repo and init submodules with `git clone -recurse-submodules https://github.com/antjowie/project-odyssey`
+1. Pull repo and init submodules with `git clone --recurse-submodules https://github.com/antjowie/project-odyssey-cpp`
 2. Install xmake with `winget install xmake`
-   1. Build for release with `xmake f -m release`
 3. Build game with `xmake` 
    1. Xmake will look for any toolchain on your machine to build the project with. If you don't have any installed you can: 
       1. Install [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) with c++ workload. This is usually used on Windows. 
       2. If you want something more lightweight you can try the [VS2022 build tools](https://visualstudio.microsoft.com/downloads/?q=build+tools), meant for build machines (CICD)
 4. Run game with `xmake run`
-5. Generate distribute binaries with `xmake install -o release game`
-6. The game will be exported to the `release\` folder
+5. Generate distribute binaries with `xmake install -o release game`, artifacts are in `release\` folder
 
 If you'd like the F5 behavior of VS you can also do `xmake; xmake run` which will execute both commands in order
 
 ## Debugging with Visual Studio
 
-Every time new source files are changed Visual Studio project files are generated. This is to ease debugging. You can find the solution file in `\vsxmake2022`
+When xmake is invoked, Visual Studio project files are generated. This is to ease debugging. You can find the solution file in `\vsxmake2022`
